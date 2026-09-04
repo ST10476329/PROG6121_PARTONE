@@ -1,1 +1,10 @@
-# PROG6121_PARTONE
+# POE PART 1
+
+# **THE PURPOSE OF THIS PROJECT**
+The purpose of this project is to turn a paper based system into a web based application. this platform will then be able to handle registrations, results and event info properly.
+
+#**THE FUNCTIONALITY OF THE APPLICATION**
+To provide a centralised platform where organisers can manage events, categories, registrations and results, while participants can browse events, register for races and view their performance.
+
+#**Execution Instructions**
+Install SQL Server Management Studio, and then from there copy the SQL code included in the docs folder. Highlight everything and then execute. 
