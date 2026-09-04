@@ -1,6 +1,7 @@
+-- creating a new database
 create database RaceDay; 
 GO
-
+-- using the database that was just created
 use RaceDay;
 GO
 
