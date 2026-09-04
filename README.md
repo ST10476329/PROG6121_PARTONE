@@ -11,3 +11,7 @@ Install SQL Server Management Studio, and then from there copy the SQL code incl
 
 # **Screenshot of working workflow**
 <img width="1343" height="636" alt="image" src="https://github.com/user-attachments/assets/667c6158-4339-4276-9d42-139b0901f5fb" />
+
+# **Referencing**
+MDN Web Docs, 2026. HTTP response status codes. [online] Available at: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status> [Accessed 4 September 2026].
+W3Schools, 2026. SQL tutorial. [online] Available at: <https://www.w3schools.com/sql/> [Accessed 4 September 2026].
