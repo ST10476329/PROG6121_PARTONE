@@ -23,7 +23,7 @@ EventDate date NOT NULL,
 location varchar (50) NOT NULL, 
 DistanceKm decimal(5,2) NOT NULL,
 EventType varchar (25) NOT NULL, 
-foreign key (OrganiserID) references users(UserID)
+foreign key (OrganiserID) references users(userID)
 );
 
 
