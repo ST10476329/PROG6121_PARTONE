@@ -63,7 +63,7 @@ ParticipantID int NOT NULL,
 categoryID int NOT NULL, 
 RegistrationDate datetime NOT NULL DEFAULT GETDATE(), 
 RaceNumber varchar (10) NOT NULL UNIQUE, 
-foreign key (ParticipantID) references users(UserID),
+foreign key (ParticipantID) references users(userID),
 foreign key (categoryID) references Category(categoryID)
 );
 
