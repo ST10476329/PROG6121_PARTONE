@@ -136,5 +136,11 @@ INSERT INTO Payments (RegistrationID, Amount, PaymentMethod, PaymentStatus) VALU
 (2, 450.00, 'EFT',  'Completed'),
 (3, 150.00, 'Card', 'Completed');
 
+INSERT INTO Payments (RegistrationID, Amount, PaymentMethod, PaymentStatus) VALUES
+(1, 250.00, 'Card', 'Completed'),
+(2, 150.00, 'Card', 'Completed'),
+(3, 50.00,  'EFT',  'Completed');
+
+
 
 
