@@ -1,0 +1,55 @@
+name: Validate Repository Structure
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check /docs folder exists
+        run: |
+          if [ ! -d "docs" ]; then
+            echo "::error::/docs folder is missing from the repository root."
+            exit 1
+          fi
+          echo "/docs folder found."
+
+      - name: Check ERD file exists (Section A)
+        run: |
+          shopt -s nullglob nocaseglob
+          matches=(docs/*erd*.png docs/*erd*.pdf docs/*"section a"*.pdf docs/*"section_a"*.pdf)
+          if [ ${#matches[@]} -eq 0 ]; then
+            echo "::error::No ERD file (.png or .pdf, named with 'ERD' or 'Section A') found in /docs."
+            exit 1
+          fi
+          echo "ERD file found: ${matches[*]}"
+
+      - name: Check API Endpoint Plan exists (Section B)
+        run: |
+          shopt -s nullglob nocaseglob
+          matches=(docs/*api*.md docs/*api*.pdf docs/*endpoint*.md docs/*endpoint*.pdf docs/*"section b"*.pdf docs/*"section_b"*.pdf)
+          if [ ${#matches[@]} -eq 0 ]; then
+            echo "::error::No API Endpoint Plan (.md or .pdf, named with 'API', 'Endpoint', or 'Section B') found in /docs."
+            exit 1
+          fi
+          echo "API Endpoint Plan found: ${matches[*]}"
+
+      - name: Check SQL script exists (Section C)
+        run: |
+          shopt -s nullglob nocaseglob
+          matches=(docs/*.sql)
+          if [ ${#matches[@]} -eq 0 ]; then
+            echo "::error::No SQL script (.sql) found in /docs."
+            exit 1
+          fi
+          echo "SQL script found: ${matches[*]}"
+
+      - name: All required /docs files present
+        run: echo "Repository structure validation passed."
