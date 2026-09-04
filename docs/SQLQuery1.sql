@@ -136,6 +136,5 @@ INSERT INTO Payments (RegistrationID, Amount, PaymentMethod, PaymentStatus) VALU
 (2, 450.00, 'EFT',  'Completed'),
 (3, 150.00, 'Card', 'Completed');
 
-select * from users;
 
 
