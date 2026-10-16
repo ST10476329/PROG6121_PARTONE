@@ -42,6 +42,9 @@ Both roles can register, log in, log out, view and update their own profile, and
 #**CI/CD Workflow**
 <img width="1344" height="623" alt="image" src="https://github.com/user-attachments/assets/129da95b-5c31-4e05-9e20-2c15f55c6b56" />
 
+#**YouTube Video Link**
+https://youtu.be/IYchtU4dNN8?si=Iaxz02PXrDHSIL9N
+
 #**Referencing**
 freecodeCamp.org(28 May 2025) Build REST APIs in .NET 9 – Full Course for Beginners[online video].Available at: youtube.com(Accessed 9 October 2026).
 W3Schools (2026) C# Tutorial. Available at: https://www.w3schools.com/cs/index.php (Accessed 14 October 2026). 
