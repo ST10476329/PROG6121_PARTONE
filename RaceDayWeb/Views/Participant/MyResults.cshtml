@@ -1,0 +1,73 @@
+﻿@model List<ResultItem>
+@using RaceDayWeb.Helpers
+
+@{
+    ViewData["Title"] = "My results";
+}
+
+<h1>My results</h1>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        You have no results yet. Results appear here after the organiser publishes them.
+        <a asp-action="MyEvents">See my events</a>.
+    </div>
+}
+else
+{
+    <p class="lead">Your race history across @Model.Count event(s).</p>
+
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Finish time</th>
+                <th>Position</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ResultItem r in Model)
+            {
+                // work out what to show for this result
+                string time = "-";
+                if (r.FinishTime != null)
+                    time = r.FinishTime.Value.ToString(@"hh\:mm\:ss");
+
+                string position = "-";
+                if (r.Status == "Finished" && r.Position != null)
+                    position = TextHelper.Ordinal(r.Position.Value) + " out of " + r.TotalFinishers + " finishers";
+
+                string statusText = r.Status;
+                string statusCss = "rd-status-confirmed";
+                if (r.Status == "DNF")
+                {
+                    statusText = "Did not finish";
+                    statusCss = "rd-status-pending";
+                }
+                if (r.Status == "DNS")
+                {
+                    statusText = "Did not start";
+                    statusCss = "rd-status-cancelled";
+                }
+                if (r.Status == "DSQ")
+                {
+                    statusText = "Disqualified";
+                    statusCss = "rd-status-danger";
+                }
+
+                <tr>
+                    <td>@r.EventName</td>
+                    <td>@r.EventDate.ToString("dd MMM yyyy")</td>
+                    <td>@r.CategoryName</td>
+                    <td>@time</td>
+                    <td>@position</td>
+                    <td><span class="badge rd-status @statusCss">@statusText</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
