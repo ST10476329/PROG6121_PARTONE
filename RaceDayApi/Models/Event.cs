@@ -32,5 +32,8 @@ namespace RaceDayApi.Models
 
         [MaxLength(25)]
         public string EventType { get; set; } = "";
+
+        [MaxLength(300)]
+        public string? BannerUrl { get; set; }
     }
 }

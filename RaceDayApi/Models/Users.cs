@@ -24,5 +24,8 @@ namespace RaceDayApi.Models
 
         [MaxLength(25)]
         public string Role { get; set; } = "";
+
+        [MaxLength(300)]
+        public string? ProfilePictureUrl { get; set; }
     }
 }
