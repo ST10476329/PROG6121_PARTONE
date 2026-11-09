@@ -1,0 +1,10 @@
+﻿@{
+    ViewData["Title"] = "Something went wrong";
+}
+
+<div class="alert alert-danger mt-4">
+    <h4>Something went wrong</h4>
+    <p>@ViewBag.Message</p>
+</div>
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to my home page</a>
