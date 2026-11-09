@@ -96,7 +96,7 @@ public class AuthController : ControllerBase
         var email = dto.Email.Trim().ToLower();
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-        // same message for "no such email" and "wrong password" so we don't leak which one it was
+        // same message for "no such email" and "wrong password" so it doesn't leak which one it was
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized(new { message = "Invalid email or password." });
 
@@ -128,7 +128,8 @@ public class AuthController : ControllerBase
             UserID = user.UserID,
             FullName = user.FullName,
             Email = user.Email,
-            Role = user.Role
+            Role = user.Role,
+            ProfilePictureUrl = user.ProfilePictureUrl,
         };
     }
 }

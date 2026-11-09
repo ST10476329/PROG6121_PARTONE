@@ -85,7 +85,7 @@ public class EnrolmentsController : ControllerBase
         await _db.SaveChangesAsync();
 
         var saved = await EnrolmentsWithDetails().FirstAsync(r => r.RegistrationID == registration.RegistrationID);
-        return StatusCode(201, ToResponse(saved));
+        return StatusCode(201, ToResponse(saved, null));
     }
 
     /// <summary>Returns all of the logged-in participant's enrolments across all events.</summary>
@@ -105,7 +105,7 @@ public class EnrolmentsController : ControllerBase
             .OrderBy(r => r.Category.Event.EventDate)
             .ToListAsync();
 
-        return Ok(enrolments.Select(ToResponse));
+        return Ok(await ToResponseList(enrolments));
     }
 
     /// <summary>Returns everyone enrolled in an event the logged-in organiser owns.</summary>
@@ -134,7 +134,7 @@ public class EnrolmentsController : ControllerBase
             .OrderBy(r => r.RaceNumber)
             .ToListAsync();
 
-        return Ok(enrolments.Select(ToResponse));
+        return Ok(await ToResponseList(enrolments));
     }
 
     /// <summary>Cancels the logged-in participant's own enrolment.</summary>
@@ -184,19 +184,57 @@ public class EnrolmentsController : ControllerBase
             .Include(r => r.Category).ThenInclude(c => c.Event);
     }
 
-    private static EnrolmentResponseDto ToResponse(Registration r)
+    // finds the results (if any) that belong to these enrolments
+    private async Task<List<Result>> GetResultsFor(List<Registration> enrolments)
     {
-        return new EnrolmentResponseDto
+        List<int> ids = enrolments.Select(e => e.RegistrationID).ToList();
+        return await _db.Results.Where(r => ids.Contains(r.RegistrationID)).ToListAsync();
+    }
+
+    // turns enrolments into response objects, with their status and result
+    private async Task<List<EnrolmentResponseDto>> ToResponseList(List<Registration> enrolments)
+    {
+        List<Result> results = await GetResultsFor(enrolments);
+
+        List<EnrolmentResponseDto> list = new List<EnrolmentResponseDto>();
+        foreach (Registration r in enrolments)
         {
-            EnrolmentID = r.RegistrationID,
-            ParticipantID = r.ParticipantID,
-            ParticipantName = r.Participant.FullName,
-            EventID = r.Category.EventID,
-            EventName = r.Category.Event.EventName,
-            CategoryID = r.CategoryID,
-            CategoryName = r.Category.CategoryName,
-            RegistrationDate = r.RegistrationDate,
-            RaceNumber = r.RaceNumber
-        };
+            Result? result = results.FirstOrDefault(x => x.RegistrationID == r.RegistrationID);
+            list.Add(ToResponse(r, result));
+        }
+        return list;
+    }
+
+    private static EnrolmentResponseDto ToResponse(Registration r, Result? result)
+    {
+        EnrolmentResponseDto dto = new EnrolmentResponseDto();
+        dto.EnrolmentID = r.RegistrationID;
+        dto.ParticipantID = r.ParticipantID;
+        dto.ParticipantName = r.Participant.FullName;
+        dto.EventID = r.Category.EventID;
+        dto.EventName = r.Category.Event.EventName;
+        dto.EventDate = r.Category.Event.EventDate;
+        dto.CategoryID = r.CategoryID;
+        dto.CategoryName = r.Category.CategoryName;
+        dto.RegistrationDate = r.RegistrationDate;
+        dto.RaceNumber = r.RaceNumber;
+
+        // work out the enrolment status
+        if (result != null)
+            dto.Status = "Completed";
+        else if (r.Category.Event.EventDate.Date < DateTime.Today)
+            dto.Status = "Awaiting results";
+        else
+            dto.Status = "Confirmed";
+
+        if (result != null)
+        {
+            dto.ResultID = result.ResultID;
+            dto.FinishTime = result.FinishTime;
+            dto.Position = result.Position;
+            dto.ResultStatus = result.Status;
+        }
+
+        return dto;
     }
 }

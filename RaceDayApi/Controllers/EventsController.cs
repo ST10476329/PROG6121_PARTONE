@@ -20,20 +20,97 @@ public class EventsController : ControllerBase
         _db = db;
     }
 
-    /// <summary>Lists all events, soonest first.</summary>
-    /// <remarks>Role required: Organiser or Participant.</remarks>
-    /// <response code="200">An array of all events (empty if there are none).</response>
+    /// <summary>Lists the events owned by the logged-in organiser, soonest first.</summary>
+    /// <remarks>Role required: Organiser. Each event includes how many people are enrolled in it.</remarks>
+    /// <response code="200">An array of the organiser's own events (empty if there are none).</response>
+    /// <response code="401">Not logged in.</response>
+    /// <response code="403">Only organisers have events to manage.</response>
+    [RequireRole(Roles.Organiser)]
+    [HttpGet("mine")]
+    [ProducesResponseType<List<EventResponseDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetMine()
+    {
+        int organiserId = HttpContext.Session.GetUserId();
+
+        List<Event> events = await _db.Events
+            .Include(e => e.Organiser)
+            .Where(e => e.OrganiserID == organiserId)
+            .OrderBy(e => e.EventDate)
+            .ToListAsync();
+
+        return Ok(await ToResponseList(events));
+    }
+
+    // how many people are enrolled in each event (EventID -> number of enrolments)
+    private async Task<Dictionary<int, int>> GetEnrolmentCounts()
+    {
+        var rows = await _db.Registrations
+            .GroupBy(r => r.Category.EventID)
+            .Select(g => new { EventID = g.Key, Total = g.Count() })
+            .ToListAsync();
+
+        Dictionary<int, int> counts = new Dictionary<int, int>();
+        foreach (var row in rows)
+        {
+            counts.Add(row.EventID, row.Total);
+        }
+        return counts;
+    }
+
+    // turns events into response objects that include their enrolment counts
+    private async Task<List<EventResponseDto>> ToResponseList(List<Event> events)
+    {
+        Dictionary<int, int> counts = await GetEnrolmentCounts();
+
+        List<EventResponseDto> list = new List<EventResponseDto>();
+        foreach (Event e in events)
+        {
+            EventResponseDto dto = ToResponse(e);
+            if (counts.ContainsKey(e.EventID))
+            {
+                dto.EnrolmentCount = counts[e.EventID];
+            }
+            list.Add(dto);
+        }
+        return list;
+    }
+    /// <summary>Lists events, soonest first. Can be filtered.</summary>
+    /// <remarks>Role required: Organiser or Participant. All filters are optional and can be combined.</remarks>
+    /// <param name="type">Only events of this type: Run, Walk or Cycle.</param>
+    /// <param name="search">Only events whose name or location contains this text.</param>
+    /// <param name="upcomingOnly">If true, only events happening today or later.</param>
+    /// <response code="200">An array of matching events (empty if none match).</response>
+    /// <response code="400">The type is not Run, Walk or Cycle.</response>
     /// <response code="401">Not logged in.</response>
     [RequireRole]
     [HttpGet]
     [ProducesResponseType<List<EventResponseDto>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll()
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAll(string? type = null, string? search = null, bool upcomingOnly = false)
     {
-        var events = await _db.Events
-            .Include(e => e.Organiser)
-            .OrderBy(e => e.EventDate)
-            .ToListAsync();
+        IQueryable<Event> query = _db.Events.Include(e => e.Organiser);
 
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            string? cleanType = EventTypes.Find(type);
+            if (cleanType == null)
+                return BadRequest(new { message = "Type must be Run, Walk or Cycle." });
+
+            query = query.Where(e => e.EventType == cleanType);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(e => e.EventName.Contains(search) || e.Location.Contains(search));
+        }
+
+        if (upcomingOnly)
+        {
+            query = query.Where(e => e.EventDate >= DateTime.Today);
+        }
+
+        List<Event> events = await query.OrderBy(e => e.EventDate).ToListAsync();
         return Ok(events.Select(ToResponse));
     }
 
@@ -189,7 +266,8 @@ public class EventsController : ControllerBase
             EventDate = e.EventDate,
             Location = e.Location,
             DistanceKm = e.DistanceKm,
-            EventType = e.EventType
+            EventType = e.EventType,
+            BannerUrl = e.BannerUrl,
         };
     }
 }

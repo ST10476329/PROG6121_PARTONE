@@ -81,7 +81,8 @@ public class UsersController : ControllerBase
             UserID = user.UserID,
             FullName = user.FullName,
             Email = user.Email,
-            Role = user.Role
+            Role = user.Role,
+            ProfilePictureUrl = user.ProfilePictureUrl,
         };
     }
 }

@@ -24,7 +24,7 @@ public class ResultsController : ControllerBase
     /// <remarks>
     /// Role required: Organiser (owner of the event only).
     /// A Finished result needs a finish time and a position. Two people in the same category cannot share a position.
-    /// An enrolment can only have one result. Use PUT to change it.
+    /// An enrolment can only have one result.
     /// </remarks>
     /// <param name="enrolmentId">The enrolment the result belongs to.</param>
     /// <param name="dto">Finish time (hh:mm:ss), position and status.</param>
@@ -51,6 +51,10 @@ public class ResultsController : ControllerBase
 
         if (registration.Category.Event.OrganiserID != HttpContext.Session.GetUserId())
             return StatusCode(403, new { message = "You can only capture results for your own events." });
+
+        // results can only be captured once the event has taken place
+        if (registration.Category.Event.EventDate.Date > DateTime.Today)
+            return BadRequest(new { message = "Results can only be captured once the event has taken place." });
 
         if (await _db.Results.AnyAsync(r => r.RegistrationID == enrolmentId))
             return Conflict(new { message = "This enrolment already has a result. Use PUT to change it." });
@@ -111,7 +115,10 @@ public class ResultsController : ControllerBase
     }
 
     /// <summary>Returns the logged-in participant's full performance history.</summary>
-    /// <remarks>Role required: Participant. Only your own results are returned, newest event first, with the event and category.</remarks>
+    /// <remarks>
+    /// Role required: Participant. Only your own results are returned, newest event first, with the event and category.
+    /// Each result includes how many people finished in the same category, so a position can be shown as "47th out of 312".
+    /// </remarks>
     /// <response code="200">An array of results (empty if none).</response>
     /// <response code="401">Not logged in.</response>
     /// <response code="403">Only participants have a performance history.</response>
@@ -121,15 +128,36 @@ public class ResultsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetMine()
     {
-        var userId = HttpContext.Session.GetUserId();
-        var results = await ResultsWithDetails()
+        int userId = HttpContext.Session.GetUserId();
+
+        List<Result> results = await ResultsWithDetails()
             .Where(r => r.Registration.ParticipantID == userId)
             .OrderByDescending(r => r.Registration.Category.Event.EventDate)
             .ToListAsync();
 
-        return Ok(results.Select(ToResponse));
-    }
+        // how many people finished in each category
+        var finisherCounts = await _db.Results
+            .Where(r => r.Status == ResultStatuses.Finished)
+            .GroupBy(r => r.Registration.CategoryID)
+            .Select(g => new { CategoryID = g.Key, Total = g.Count() })
+            .ToListAsync();
 
+        List<ResultResponseDto> list = new List<ResultResponseDto>();
+        foreach (Result r in results)
+        {
+            ResultResponseDto dto = ToResponse(r);
+
+            foreach (var row in finisherCounts)
+            {
+                if (row.CategoryID == r.Registration.CategoryID)
+                    dto.TotalFinishers = row.Total;
+            }
+
+            list.Add(dto);
+        }
+
+        return Ok(list);
+    }
     // returns an error message, or null if the result is fine
     private async Task<string?> CheckResult(ResultDto dto, int categoryId, int thisResultId)
     {
