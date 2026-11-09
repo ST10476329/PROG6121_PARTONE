@@ -1,0 +1,27 @@
+﻿@model CategoryFormViewModel
+
+@{
+    ViewData["Title"] = "Add category";
+}
+
+<h2>Add category</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="EventID" />
+
+            <partial name="_CategoryFields" model="Model" />
+
+            <button type="submit" class="btn btn-primary">Add category</button>
+            <a asp-action="Index" asp-route-eventId="@Model.EventID" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

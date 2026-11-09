@@ -1,0 +1,63 @@
+﻿@model CategoryListViewModel
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2>Categories</h2>
+        <p class="lead mb-0">@Model.Event.EventName &middot; @Model.Event.EventDate.ToString("dd MMM yyyy")</p>
+    </div>
+    <div>
+        <a asp-controller="Events" asp-action="Index" class="btn btn-secondary">Back to events</a>
+        <a asp-action="Create" asp-route-eventId="@Model.Event.EventID" class="btn btn-primary">Add category</a>
+    </div>
+</div>
+
+@if (Model.Categories.Count == 0)
+{
+    <div class="alert alert-info">This event has no categories yet. Participants need a category to enter.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Distance</th>
+                <th>Entry fee</th>
+                <th>Minimum age</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CategoryItem c in Model.Categories)
+            {
+                <tr>
+                    <td>@c.CategoryName</td>
+                    <td>@c.DistanceKm km</td>
+                    <td>R @c.EntryFee.ToString("0.00")</td>
+                    <td>
+                        @if (c.MinAge != null)
+                        {
+                            <span>@c.MinAge</span>
+                        }
+                        else
+                        {
+                            <span>None</span>
+                        }
+                    </td>
+                    <td class="text-nowrap">
+                        <a asp-action="Edit" asp-route-eventId="@Model.Event.EventID" asp-route-id="@c.CategoryID" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Delete this category?');">
+                            <input type="hidden" name="id" value="@c.CategoryID" />
+                            <input type="hidden" name="eventId" value="@Model.Event.EventID" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
