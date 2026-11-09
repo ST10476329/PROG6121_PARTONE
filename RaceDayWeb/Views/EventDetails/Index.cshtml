@@ -1,0 +1,114 @@
+﻿@model EventDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Event.EventName;
+    bool past = Model.Event.EventDate.Date < DateTime.Today;
+}
+
+<img src="@Images.Banner(Model.Event.BannerUrl)" alt="Banner for @Model.Event.EventName" class="rd-banner mb-4" />
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <h1>@Model.Event.EventName</h1>
+        <p class="lead">@Model.Event.Description</p>
+
+        <h3 class="mt-4">Categories</h3>
+        @if (Model.Categories.Count == 0)
+        {
+            <div class="alert alert-info">No categories have been added to this event yet.</div>
+        }
+        else
+        {
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Distance</th>
+                        <th>Entry fee</th>
+                        <th>Minimum age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (CategoryItem c in Model.Categories)
+                    {
+                        <tr>
+                            <td>@c.CategoryName</td>
+                            <td>@c.DistanceKm km</td>
+                            <td>R @c.EntryFee.ToString("0.00")</td>
+                            <td>
+                                @if (c.MinAge != null)
+                                {
+                                    <span>@c.MinAge</span>
+                                }
+                                else
+                                {
+                                    <span>None</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Event details</h5>
+                <ul class="list-unstyled mb-0">
+                    <li><strong>Date:</strong> @Model.Event.EventDate.ToString("dd MMM yyyy")</li>
+                    <li><strong>Location:</strong> @Model.Event.Location</li>
+                    <li><strong>Distance:</strong> @Model.Event.DistanceKm km</li>
+                    <li><strong>Type:</strong> @Model.Event.EventType</li>
+                    <li><strong>Organiser:</strong> @Model.Event.OrganiserName</li>
+                </ul>
+            </div>
+        </div>
+
+        @if (Model.IsParticipant)
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5>Enter this event</h5>
+
+                    @if (Model.MyEnrolment != null)
+                    {
+                        <p class="mb-1">You are enrolled in <strong>@Model.MyEnrolment.CategoryName</strong>.</p>
+                        <p class="mb-1">Race number: <strong>@Model.MyEnrolment.RaceNumber</strong></p>
+                        <p class="mb-0">Status: <partial name="_StatusBadge" model="Model.MyEnrolment.Status" /></p>
+                    }
+                    else if (past)
+                    {
+                        <p class="mb-0">This event has already taken place.</p>
+                    }
+                    else if (Model.Categories.Count == 0)
+                    {
+                        <p class="mb-0">You can enter once the organiser adds a category.</p>
+                    }
+                    else
+                    {
+                        <form asp-action="Enrol" method="post">
+                            <input type="hidden" name="eventId" value="@Model.Event.EventID" />
+
+                            <label for="categoryId" class="form-label">Choose a category</label>
+                            <select id="categoryId" name="categoryId" class="form-select mb-3">
+                                @foreach (CategoryItem c in Model.Categories)
+                                {
+                                    <option value="@c.CategoryID">@c.CategoryName (R @c.EntryFee.ToString("0.00"))</option>
+                                }
+                            </select>
+
+                            <button type="submit" class="btn btn-primary w-100">Enter event</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">You are viewing this event as an organiser.</div>
+            <a asp-controller="Events" asp-action="Index" class="btn btn-secondary">Back to my events</a>
+        }
+    </div>
+</div>
