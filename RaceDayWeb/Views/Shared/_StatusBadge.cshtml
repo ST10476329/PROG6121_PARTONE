@@ -1,0 +1,15 @@
+﻿@model string
+
+@{
+    // one place decides the colour of every enrolment status in the whole app
+    string css = "rd-status-confirmed";
+
+    if (Model == "Awaiting results" || Model == "Pending")
+        css = "rd-status-pending";
+    else if (Model == "Completed")
+        css = "rd-status-completed";
+    else if (Model == "Cancelled")
+        css = "rd-status-cancelled";
+}
+
+<span class="badge rd-status @css">@Model</span>
