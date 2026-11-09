@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 
 env:
-
   SOLUTION_PATH: RaceDayApi.slnx
+  WEB_PROJECT: RaceDayWeb/RaceDayWeb.csproj
 
 jobs:
   build-and-test:
@@ -24,8 +24,51 @@ jobs:
       - name: Restore packages
         run: dotnet restore "${{ env.SOLUTION_PATH }}"
 
-      - name: Build
+      - name: Build (API, MVC and tests)
         run: dotnet build "${{ env.SOLUTION_PATH }}" --configuration Release --no-restore
 
       - name: Run unit tests
         run: dotnet test "${{ env.SOLUTION_PATH }}" --configuration Release --no-build --logger "console;verbosity=detailed"
+
+  validate-mvc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore MVC project
+        run: dotnet restore "${{ env.WEB_PROJECT }}"
+
+      - name: Build MVC project (compiles all Razor views)
+        run: dotnet build "${{ env.WEB_PROJECT }}" --configuration Release --no-restore
+
+      - name: Check views (partials exist, no spaces in view names)
+        run: |
+          cd RaceDayWeb/Views
+          fail=0
+
+          # view files are found by action name, so a space in the file name means it is never found
+          while IFS= read -r f; do
+            echo "::error file=RaceDayWeb/Views/${f#./}::View file name contains a space. Rename it to match its action (e.g. AccessDenied.cshtml)."
+            fail=1
+          done < <(find . -name "* *.cshtml")
+
+          # every <partial name="X" /> must exist next to the calling view or in Views/Shared
+          while IFS= read -r hit; do
+            file="${hit%%:*}"
+            name=$(echo "$hit" | sed -n 's/.*<partial[[:space:]]\+name="\([^"]*\)".*/\1/p')
+            [ -z "$name" ] && continue
+            dir=$(dirname "$file")
+            if [ ! -f "$dir/$name.cshtml" ] && [ ! -f "Shared/$name.cshtml" ]; then
+              echo "::error file=RaceDayWeb/Views/${file#./}::Partial '$name' not found. Put $name.cshtml in Views/Shared (or the same folder as this view)."
+              fail=1
+            fi
+          done < <(grep -rn --include="*.cshtml" "<partial" . | sed 's/^\([^:]*\):[0-9]*:/\1:/')
+
+          exit $fail
