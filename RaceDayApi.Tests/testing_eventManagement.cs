@@ -218,6 +218,49 @@ namespace RaceDayApi.Tests
 
             Assert.Equal(expect_results, results);
         }
+        // filtering by type only returns events of that type
+        [Fact]
+        public async Task getAll_filterByType_returnsOnlyThatType()
+        {
+            TestSetup.AddEvent(db, organiser.UserID, "Run One");
+            Event cycle_event = TestSetup.AddEvent(db, organiser.UserID, "Cycle One");
+            cycle_event.EventType = "Cycle";
+            db.SaveChanges();
+
+            OkObjectResult ok = (OkObjectResult)await test_events.GetAll("Cycle", null, false);
+            IEnumerable<EventResponseDto> filtered = (IEnumerable<EventResponseDto>)ok.Value;
+
+            int results = filtered.Count();
+            int expect_results = 1;
+
+            Assert.Equal(expect_results, results);
+        }
+
+        // "upcoming only" leaves out events that already happened
+        [Fact]
+        public async Task getAll_upcomingOnly_leavesOutPastEvents()
+        {
+            TestSetup.AddEvent(db, organiser.UserID, "Future Run", 10);
+            TestSetup.AddEvent(db, organiser.UserID, "Old Run", -10);
+
+            OkObjectResult ok = (OkObjectResult)await test_events.GetAll(null, null, true);
+            IEnumerable<EventResponseDto> filtered = (IEnumerable<EventResponseDto>)ok.Value;
+
+            int results = filtered.Count();
+            int expect_results = 1;
+
+            Assert.Equal(expect_results, results);
+        }
+
+        // a type that does not exist is a bad request
+        [Fact]
+        public async Task getAll_invalidType_badRequest()
+        {
+            int results = TestSetup.GetStatus(await test_events.GetAll("Swim", null, false));
+            int expect_results = 400;
+
+            Assert.Equal(expect_results, results);
+        }
 
     }// end of class
 }// end of namespace
