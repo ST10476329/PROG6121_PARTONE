@@ -1,0 +1,55 @@
+﻿@model ProfileViewModel
+
+@{
+    ViewData["Title"] = "My profile";
+}
+
+<h1>My profile</h1>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <img src="@Images.Profile(Model.ProfilePictureUrl)" alt="Your profile picture" class="rd-avatar-lg mb-3" />
+
+                <form asp-action="UploadPicture" method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" accept="image/png,image/jpeg,image/webp" class="form-control mb-2" required />
+                    <button type="submit" class="btn btn-primary w-100">Upload picture</button>
+                </form>
+                <div class="form-text">JPG, PNG or WebP, up to 2 MB.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5>Personal information</h5>
+
+                <form asp-action="Update" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
