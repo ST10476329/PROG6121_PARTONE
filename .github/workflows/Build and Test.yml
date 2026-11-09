@@ -1,0 +1,56 @@
+name: Build and Test
+
+# runs on every push to any branch, and can also be started by hand from the Actions tab
+on:
+  push:
+      branches:
+      - part3-mvc
+  workflow_dispatch:
+
+env:
+ 
+  SOLUTION_PATH: RaceDayApi.sln
+  API_PROJECT: RaceDayApi/RaceDayApi.csproj
+  MVC_PROJECT: RaceDayWeb/RaceDayWeb.csproj
+  TEST_PROJECT: RaceDayApi.Tests/RaceDayApi.Tests.csproj
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      # fails the build if an important file is missing or in the wrong place
+      - name: Check the repository structure
+        run: |
+          missing=0
+          for path in "$SOLUTION_PATH" "$API_PROJECT" "$MVC_PROJECT" "$TEST_PROJECT" "README.md"; do
+            if [ -f "$path" ]; then
+              echo "Found: $path"
+            else
+              echo "MISSING: $path"
+              missing=1
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore packages
+        run: dotnet restore "${{ env.SOLUTION_PATH }}"
+
+      - name: Build the API project
+        run: dotnet build "${{ env.API_PROJECT }}" --configuration Release --no-restore
+
+      - name: Build the MVC project
+        run: dotnet build "${{ env.MVC_PROJECT }}" --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test "${{ env.SOLUTION_PATH }}" --configuration Release --no-restore --logger "console;verbosity=detailed"
