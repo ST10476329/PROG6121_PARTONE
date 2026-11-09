@@ -1,0 +1,29 @@
+name: MVC Build and Validation
+
+on:
+  push:
+    branches:
+      - part3-mvc
+  workflow_dispatch:
+
+env:
+  MVC_PROJECT_PATH: RaceDayWeb/RaceDayWeb.csproj
+
+jobs:
+  build-mvc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore MVC packages
+        run: dotnet restore "${{ env.MVC_PROJECT_PATH }}"
+
+      - name: Build MVC project
+        run: dotnet build "${{ env.MVC_PROJECT_PATH }}" --configuration Release --no-restore
