@@ -1,0 +1,1 @@
+Uploaded images are saved in the uploads folder inside this folder.

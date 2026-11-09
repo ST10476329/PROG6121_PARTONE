@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using RaceDayApi.Data;
+using System.Globalization;
 
 namespace RaceDayApi
 {
@@ -9,6 +10,9 @@ namespace RaceDayApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            // always read and write numbers like 10.5 with a dot or whatever language the computer uses
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             // Add services to the container.
 
@@ -20,6 +24,7 @@ namespace RaceDayApi
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
+                options.Cookie.Name = ".RaceDayWeb.Session";
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
@@ -40,7 +45,8 @@ namespace RaceDayApi
             app.UseSwaggerUI();   // creates the web page at /swagger
 
             app.UseHttpsRedirection();
-            app.UseSession();     // must be BEFORE MapControllers
+            app.UseStaticFiles();
+            app.UseSession();
             app.UseAuthorization();
             app.MapControllers();
 
