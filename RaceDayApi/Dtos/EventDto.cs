@@ -47,4 +47,6 @@ public class EventResponseDto
     public string Location { get; set; } = "";
     public decimal DistanceKm { get; set; }
     public string EventType { get; set; } = "";
+    public int EnrolmentCount { get; set; }
+    public string? BannerUrl { get; set; }
 }

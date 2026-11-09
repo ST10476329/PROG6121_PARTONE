@@ -18,6 +18,9 @@ public class ResultDto
     /// <example>Finished</example>
     [Required]
     public string Status { get; set; } = "";
+
+    /// <summary>How many participants finished in the same category (for "47th out of 312 finishers").</summary>
+
 }
 
 public class ResultResponseDto
@@ -32,4 +35,5 @@ public class ResultResponseDto
     public TimeSpan? FinishTime { get; set; }
     public int? Position { get; set; }
     public string Status { get; set; } = "";
+    public int TotalFinishers { get; set; }
 }

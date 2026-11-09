@@ -49,6 +49,8 @@ namespace RaceDayApi.Dtos
         public string FullName { get; set; } = "";
         public string Email { get; set; } = "";
         public string Role { get; set; } = "";
+        public string? ProfilePictureUrl { get; set; }
+
     }
 
     /// <summary>What login returns. The session cookie takes the place of a token.</summary>
