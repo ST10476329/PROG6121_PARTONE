@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Page not found";
+    int code = ViewBag.Code;
+}
+
+<div class="text-center mt-5">
+    @if (code == 404)
+    {
+        <h1>Page not found</h1>
+        <p class="lead">We could not find the page you were looking for.</p>
+    }
+    else
+    {
+        <h1>Something went wrong</h1>
+        <p class="lead">Sorry, that request could not be completed.</p>
+    }
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to home</a>
+</div>

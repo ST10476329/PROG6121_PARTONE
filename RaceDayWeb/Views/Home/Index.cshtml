@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+}
+
+<div class="rd-hero text-center mb-5">
+    <h1>Run. Walk. <span class="accent">Cycle.</span></h1>
+    <p class="lead mb-4">Find your next race, enter in seconds and track every result.</p>
+    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg me-2">Join RaceDay</a>
+    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">Login</a>
+</div>
+
+<div class="row text-center">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="rd-icon">🏃</div>
+                <h3>Run</h3>
+                <p class="mb-0">From 5km fun runs to full marathons.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="rd-icon">🚶</div>
+                <h3>Walk</h3>
+                <p class="mb-0">Charity walks and relaxed community events.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="rd-icon">🚴</div>
+                <h3>Cycle</h3>
+                <p class="mb-0">Road and mountain bike races for every level.</p>
+            </div>
+        </div>
+    </div>
+</div>
